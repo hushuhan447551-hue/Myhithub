@@ -17,7 +17,7 @@ export const COLOR_MAP: Record<FlowColor, string> = {
 export const SYMPTOMS = [
   { id: 'nothing', label: '没啥感觉', icon: 'fa-face-smile' },
   { id: 'cramps', label: '腹痛', icon: 'fa-heart-pulse' },
-  { id: 'headache', label: '额头沉', icon: 'fa-cloud-sun' },
+  { id: 'headache', label: '头疼', icon: 'fa-cloud-sun' },
   { id: 'fatigue', label: '没力气', icon: 'fa-bed' },
   { id: 'breast', label: '胀胀的', icon: 'fa-circle-notch' },
   { id: 'acne', label: '冒痘痘', icon: 'fa-star' },
@@ -29,6 +29,6 @@ export const MOODS = [
   { id: 'irritable', label: '有一点烦', icon: 'fa-cloud-bolt' },
   { id: 'anxious', label: '心慌慌', icon: 'fa-water' },
   { id: 'sad', label: '想哭哭', icon: 'fa-cloud-showers-heavy' },
-  { id: 'calm', label: '很安静', icon: 'fa-leaf' },
+  { id: 'calm', label: '平静', icon: 'fa-leaf' },
   { id: 'energetic', label: '活力满满', icon: 'fa-rocket' },
 ];

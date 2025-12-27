@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { LogEntry, FlowColor } from '../types';
+import { LogEntry, FlowColor, FlowVolume } from '../types';
 import { COLOR_MAP } from '../constants';
 
 interface MonthlyStatsProps {
@@ -8,7 +8,7 @@ interface MonthlyStatsProps {
 }
 
 const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
-  const [openMonth, setOpenMonth] = useState<string | null>(null);
+  const [expandedMonths, setExpandedMonths] = useState<string[]>([]);
 
   // Group entries by Year-Month
   const groupedByMonth = entries.reduce((acc, entry) => {
@@ -18,6 +18,7 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
     return acc;
   }, {} as Record<string, LogEntry[]>);
 
+  // Sorting by year and month (Reverse chronological to keep recent records accessible)
   const monthKeys = Object.keys(groupedByMonth).sort((a, b) => b.localeCompare(a));
 
   if (monthKeys.length === 0) {
@@ -56,7 +57,9 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
   };
 
   const toggleMonth = (key: string) => {
-    setOpenMonth(openMonth === key ? null : key);
+    setExpandedMonths(prev => 
+      prev.includes(key) ? prev.filter(k => k !== key) : [...prev, key]
+    );
   };
 
   return (
@@ -71,7 +74,7 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
         {monthKeys.map((monthKey) => {
           const monthEntries = groupedByMonth[monthKey];
           const [year, month] = monthKey.split('-');
-          const isOpen = openMonth === monthKey;
+          const isOpen = expandedMonths.includes(monthKey);
           const ranges = getDateRanges(monthEntries);
           
           // Find dominant color
@@ -81,6 +84,17 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
           }, {} as Record<string, number>);
           const dominantColor = (Object.keys(colorCounts) as FlowColor[]).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b);
 
+          // Find dominant volume
+          const volumeCounts = monthEntries.reduce((acc, e) => {
+            acc[e.volume] = (acc[e.volume] || 0) + 1;
+            return acc;
+          }, {} as Record<string, number>);
+          const dominantVolume = (Object.keys(volumeCounts) as FlowVolume[]).reduce((a, b) => volumeCounts[a] > volumeCounts[b] ? a : b);
+
+          // Get first and last dates of the whole recorded month period
+          const firstDay = ranges[0]?.start.split('-').slice(1).join('/');
+          const lastDay = ranges[ranges.length - 1]?.end.split('-').slice(1).join('/');
+
           return (
             <div 
               key={monthKey} 
@@ -88,20 +102,35 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
             >
               <button 
                 onClick={() => toggleMonth(monthKey)}
-                className="w-full px-6 py-5 flex items-center justify-between text-left"
+                className="w-full px-5 py-4 flex flex-col text-left group"
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-pink-50 rounded-2xl flex items-center justify-center font-serif font-bold text-pink-500 text-xl">
-                    {month}
-                  </div>
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-700">{year}年 {month}月</h4>
-                    <p className="text-[10px] text-gray-400 font-medium">{monthEntries.length} 天记录 · 主要色泽: {dominantColor}</p>
-                  </div>
+                <div className="flex items-center justify-between w-full mb-1">
+                   <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-pink-50 rounded-xl flex items-center justify-center font-serif font-bold text-pink-500 text-lg">
+                        {month}
+                      </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-gray-700">{year}年 {month}月</h4>
+                        <p className="text-[10px] text-gray-400 font-medium">
+                          {firstDay} - {lastDay}
+                        </p>
+                      </div>
+                   </div>
+                   <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${COLOR_MAP[dominantColor]} shadow-sm`}></div>
+                      <i className={`fas fa-chevron-down text-[10px] text-gray-300 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}></i>
+                   </div>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className={`w-3 h-3 rounded-full ${COLOR_MAP[dominantColor]} shadow-sm`}></div>
-                  <i className={`fas fa-chevron-down text-[10px] text-gray-300 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}`}></i>
+                
+                <div className="flex items-center gap-4 mt-2 px-1">
+                   <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-black text-sky-400 uppercase tracking-tighter">天数:</span>
+                      <span className="text-[10px] font-bold text-gray-600">{monthEntries.length}天</span>
+                   </div>
+                   <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-black text-pink-400 uppercase tracking-tighter">流量:</span>
+                      <span className="text-[10px] font-bold text-gray-600">{dominantVolume}</span>
+                   </div>
                 </div>
               </button>
 
@@ -111,12 +140,16 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
                   
                   <div className="space-y-4">
                     <div>
-                      <p className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-2">经期周期</p>
-                      <div className="space-y-1">
+                      <p className="text-[9px] font-black text-sky-400 uppercase tracking-widest mb-2">详细周期分布</p>
+                      <div className="space-y-2">
                         {ranges.map((range, idx) => (
-                          <div key={idx} className="flex items-center gap-2 text-xs font-bold text-gray-600">
+                          <div key={idx} className="flex items-center gap-3 text-xs font-bold text-gray-600 bg-white/40 p-2 rounded-xl border border-white/50">
                             <span className="w-2 h-2 rounded-full bg-pink-300"></span>
-                            {range.start.replace(/-/g, '/')} <i className="fas fa-arrow-right-long text-[9px] text-gray-300 mx-1"></i> {range.end.replace(/-/g, '/')}
+                            <div className="flex-1 flex justify-between items-center">
+                               <span>{range.start.replace(/-/g, '/')}</span>
+                               <i className="fas fa-arrow-right-long text-[9px] text-gray-300"></i>
+                               <span>{range.end.replace(/-/g, '/')}</span>
+                            </div>
                           </div>
                         ))}
                       </div>
@@ -124,19 +157,21 @@ const MonthlyStats: React.FC<MonthlyStatsProps> = ({ entries }) => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="bg-green-50/50 rounded-2xl p-3">
-                        <p className="text-[8px] font-bold text-green-600 uppercase mb-1">平均体感</p>
+                        <p className="text-[8px] font-bold text-green-600 uppercase mb-1">体感关键词</p>
                         <div className="flex flex-wrap gap-1">
-                          {Array.from(new Set(monthEntries.flatMap(e => e.symptoms || []))).slice(0, 2).map(s => (
-                            <span key={s} className="text-[9px] text-green-700">#{s}</span>
+                          {Array.from(new Set(monthEntries.flatMap(e => e.symptoms || []))).slice(0, 3).map(s => (
+                            <span key={s} className="text-[9px] text-green-700 font-medium">#{s}</span>
                           ))}
+                          {monthEntries.flatMap(e => e.symptoms || []).length === 0 && <span className="text-[8px] text-gray-300">无记录</span>}
                         </div>
                       </div>
                       <div className="bg-pink-50/50 rounded-2xl p-3">
-                        <p className="text-[8px] font-bold text-pink-600 uppercase mb-1">心情轨迹</p>
+                        <p className="text-[8px] font-bold text-pink-600 uppercase mb-1">情绪轨迹</p>
                         <div className="flex flex-wrap gap-1">
-                          {Array.from(new Set(monthEntries.flatMap(e => e.moods || []))).slice(0, 2).map(m => (
-                            <span key={m} className="text-[9px] text-pink-700">#{m}</span>
+                          {Array.from(new Set(monthEntries.flatMap(e => e.moods || []))).slice(0, 3).map(m => (
+                            <span key={m} className="text-[9px] text-pink-700 font-medium">#{m}</span>
                           ))}
+                          {monthEntries.flatMap(e => e.moods || []).length === 0 && <span className="text-[8px] text-gray-300">无记录</span>}
                         </div>
                       </div>
                     </div>
