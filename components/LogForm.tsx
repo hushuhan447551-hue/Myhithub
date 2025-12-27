@@ -98,20 +98,22 @@ const LogForm: React.FC<LogFormProps> = ({ date, initialData, onSave, onDelete }
       {/* Color Selection */}
       <div className="space-y-4">
         <label className="text-xs font-black text-pink-400 uppercase tracking-widest">色泽</label>
-        <div className="flex justify-between items-center bg-white/50 p-4 rounded-[2rem] border border-white">
-          {Object.values(FlowColor).map(c => (
-            <button
-              key={c}
-              type="button"
-              onClick={() => setColor(c)}
-              className="flex flex-col items-center gap-2"
-            >
-              <div className={`w-10 h-10 rounded-full ${COLOR_MAP[c]} transition-all duration-300 ${
-                color === c ? 'ring-4 ring-sky-100 scale-110 shadow-md' : 'opacity-30'
-              }`} />
-              <span className={`text-[9px] font-bold ${color === c ? 'text-gray-600' : 'text-gray-300'}`}>{c}</span>
-            </button>
-          ))}
+        <div className="bg-white/50 p-6 rounded-[2rem] border border-white">
+          <div className="grid grid-cols-3 gap-6">
+            {Object.values(FlowColor).map(c => (
+              <button
+                key={c}
+                type="button"
+                onClick={() => setColor(c)}
+                className="flex flex-col items-center gap-2"
+              >
+                <div className={`w-10 h-10 rounded-full ${COLOR_MAP[c]} transition-all duration-300 ${
+                  color === c ? 'ring-4 ring-sky-100 scale-110 shadow-md' : 'opacity-30'
+                }`} />
+                <span className={`text-[9px] font-bold truncate w-full text-center ${color === c ? 'text-gray-600' : 'text-gray-300'}`}>{c}</span>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -137,7 +139,7 @@ const LogForm: React.FC<LogFormProps> = ({ date, initialData, onSave, onDelete }
         </div>
 
         <div className="space-y-4">
-          <label className="text-xs font-black text-sky-400 uppercase tracking-widest">心情天候</label>
+          <label className="text-xs font-black text-sky-400 uppercase tracking-widest">情绪状态</label>
           <div className="flex flex-wrap gap-2">
             {MOODS.map(m => (
               <button

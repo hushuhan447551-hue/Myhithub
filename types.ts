@@ -7,9 +7,10 @@ export enum FlowVolume {
 }
 
 export enum FlowColor {
-  PURPLE_BLACK = '深紫黑', // Note: name retained but map color is deep burgundy
+  PURPLE_BLACK = '深紫黑',
   BROWN = '红褐',
   DARK_RED = '深红',
+  RED = '红色',
   BRIGHT_RED = '鲜红',
   PALE_RED = '淡红'
 }

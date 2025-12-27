@@ -72,11 +72,11 @@ const Calendar: React.FC<CalendarProps> = ({ entries, selectedDate, onSelectDate
                 ${isSelected ? 'bg-white scale-110 shadow-lg ring-1 ring-pink-100' : 'hover:bg-white/50'}
               `}
             >
-              {/* Large sunflower for recorded days */}
-              <div className={`text-4xl mb-1 transition-all ${entry ? 'opacity-100 scale-100 drop-shadow-md' : 'opacity-5 scale-75 group-hover:opacity-20'}`}>
-                 🌻
+              {/* Recorded day: sunflower, regular day: small sun */}
+              <div className={`transition-all duration-500 ${entry ? 'text-4xl opacity-100 scale-100 drop-shadow-md' : 'text-xl opacity-20 scale-75 group-hover:opacity-40'}`}>
+                 {entry ? '🌻' : '☀️'}
               </div>
-              <span className={`text-[10px] font-bold ${isSelected ? 'text-pink-500' : 'text-gray-400'}`}>
+              <span className={`text-[10px] font-bold mt-1 ${isSelected ? 'text-pink-500' : 'text-gray-400'}`}>
                 {d}
               </span>
               
